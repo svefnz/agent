@@ -19,13 +19,12 @@ Choose one of the following methods:
 
 <details>
 <summary><strong>Docker container</strong></summary>
-
 <br>
+
 
 > [!NOTE]
 >
 > So long as the container hasn't been restricted, the reported CPU load and memory usage should match those of the host. For disk usage, you'll need to mount the relevant mountpoints into the container.
-
 
 ```yml
 services:
@@ -78,6 +77,7 @@ And follow the instructions. When done, the agent can later be configured throug
 ### Demo
 
 <img src="assets/install-demo.gif">
+
 
 > [!NOTE]
 >
@@ -197,6 +197,7 @@ To hide a mountpoint, use the prefix `!`, for example:
 ```
 MOUNTPOINTS="/mnt/data:Data, !/etc/hostname"
 ```
+
 
 > [!NOTE]
 >

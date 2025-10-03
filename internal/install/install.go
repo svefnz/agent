@@ -496,7 +496,7 @@ func Init() (err error) {
 	}
 
 	// fmt.Println("\nTo update the agent run", trm.Styled("sudo "+options.UpdateScriptPath, trm.FgCyan))
-	fmt.Println("To uninstall the agent run", trm.Styled("sudo "+options.UninstallScriptPath, trm.FgCyan))
+	fmt.Println("\nTo uninstall the agent run", trm.Styled("sudo "+options.UninstallScriptPath, trm.FgCyan))
 
 	fmt.Print("\nAdd the following entry to your servers list in glance.yml:\n\n")
 	trm.PrintlnStyled(string(glanceConfigEntryContents), trm.FgCyan)
