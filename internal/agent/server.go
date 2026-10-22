@@ -67,6 +67,28 @@ func serve(config *config) error {
 		w.Write(cachedSystemInfo.json)
 	})
 
+	if config.Docker.Source != "" {
+		mux.HandleFunc("/api/containers", func(w http.ResponseWriter, r *http.Request) {
+			if !isAuthorized(r, w) {
+				return
+			}
+
+			containers, err := collectContainerStats(config.Docker.Source)
+			if err != nil {
+				slog.Error("Could not collect container stats", "error", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(containers); err != nil {
+				slog.Error("Could not encode containers response", "error", err)
+			}
+		})
+
+		slog.Info("Container endpoints enabled", "source", config.Docker.Source)
+	}
+
 	mux.HandleFunc("/api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if !isAuthorized(r, w) {
 			return

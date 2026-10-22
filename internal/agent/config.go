@@ -20,6 +20,12 @@ type config struct {
 	} `yaml:"server"`
 
 	SystemInfoRequest *sysinfo.SystemInfoRequest `yaml:"system"`
+
+	Docker struct {
+		// Source is the Docker API endpoint, either a unix socket path or a
+		// tcp:// URL. Empty disables the container endpoints.
+		Source string `yaml:"source"`
+	} `yaml:"docker"`
 }
 
 func loadConfig(path string) (*config, error) {
@@ -56,6 +62,7 @@ func loadConfigFromEnvs() *config {
 
 	c.Server.Port = port
 	c.Server.Token = os.Getenv("TOKEN")
+	c.Docker.Source = os.Getenv("DOCKER_SOURCE")
 
 	hideMountpoints := os.Getenv("HIDE_MOUNTPOINTS_BY_DEFAULT") == "true"
 
