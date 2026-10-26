@@ -19,11 +19,27 @@ var cachedSystemInfo struct {
 }
 
 func serve(config *config) error {
+	mux, err := buildHandler(config)
+	if err != nil {
+		return err
+	}
+
+	server := http.Server{
+		Addr:    fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port),
+		Handler: mux,
+	}
+
+	slog.Info("Starting server", "host", config.Server.Host, "port", config.Server.Port)
+	return server.ListenAndServe()
+}
+
+// buildHandler wires the agent's endpoints so they can be exercised without
+// binding a port.
+func buildHandler(config *config) (http.Handler, error) {
 	authorizationValue := []byte("Bearer " + config.Server.Token)
 
 	isAuthorized := func(r *http.Request, w http.ResponseWriter) bool {
-		if config.Server.Token != "" &&
-			subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), authorizationValue) != 1 {
+		if subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), authorizationValue) != 1 {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return false
 		}
@@ -97,11 +113,5 @@ func serve(config *config) error {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	server := http.Server{
-		Addr:    fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port),
-		Handler: mux,
-	}
-
-	slog.Info("Starting server", "host", config.Server.Host, "port", config.Server.Port)
-	return server.ListenAndServe()
+	return mux, nil
 }

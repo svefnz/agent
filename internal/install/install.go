@@ -231,7 +231,7 @@ func Init() (err error) {
 		func(o *installOptions) (string, string, func() error) {
 			return "Use a randomly generated authentication token", ternary(o.RandomAuthToken, "Yes", "No"), func() error {
 				input := takeUserInput(fmt.Sprintf(
-					"Enter %s to use a random token, %s to remove authentication or leave blank to go back without making changes",
+					"Enter %s to use a random token, %s to supply your own or leave blank to go back without making changes",
 					styledInputOption("yes"),
 					styledInputOption("no"),
 				))
@@ -239,7 +239,18 @@ func Init() (err error) {
 					return nil
 				}
 
-				o.RandomAuthToken = stringToBool(input)
+				if stringToBool(input) {
+					o.RandomAuthToken = true
+					return nil
+				}
+
+				token := takeUserInput("Enter the authentication token to use")
+				if token == "" {
+					return nil
+				}
+
+				o.RandomAuthToken = false
+				o.AuthToken = token
 				return nil
 			}
 		},
@@ -329,7 +340,8 @@ func Init() (err error) {
 		return nil
 	}
 
-	if options.RandomAuthToken {
+	// The agent refuses to start without a token, so always end up with one.
+	if options.AuthToken == "" {
 		options.AuthToken = makeRandomString(32)
 	}
 
@@ -457,9 +469,7 @@ func Init() (err error) {
 				var lastErr error
 
 				req, _ := http.NewRequest("GET", "http://localhost:"+strconv.Itoa(int(options.Port))+"/api/healthz", nil)
-				if options.RandomAuthToken {
-					req.Header.Set("Authorization", "Bearer "+options.AuthToken)
-				}
+				req.Header.Set("Authorization", "Bearer "+options.AuthToken)
 
 				client := &http.Client{Timeout: 2 * time.Second}
 

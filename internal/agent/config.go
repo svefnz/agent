@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -31,7 +32,8 @@ type config struct {
 func loadConfig(path string) (*config, error) {
 	contents, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
-		return loadConfigFromEnvs(), nil
+		c := loadConfigFromEnvs()
+		return c, c.validate()
 	} else if err != nil {
 		return nil, err
 	}
@@ -44,7 +46,18 @@ func loadConfig(path string) (*config, error) {
 		return nil, err
 	}
 
-	return config, nil
+	return config, config.validate()
+}
+
+// validate rejects a configuration that would serve data unauthenticated.
+// The agent's endpoints expose host and container inventory, so an absent
+// token is a misconfiguration rather than a supported open mode.
+func (c *config) validate() error {
+	if strings.TrimSpace(c.Server.Token) == "" {
+		return fmt.Errorf("no authentication token configured: set server.token in the config file or the TOKEN environment variable")
+	}
+
+	return nil
 }
 
 func loadConfigFromEnvs() *config {
