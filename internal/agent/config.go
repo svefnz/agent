@@ -74,6 +74,7 @@ func loadConfigFromEnvs() *config {
 	}
 
 	c.Server.Port = port
+	c.Server.Host = os.Getenv("HOST")
 	c.Server.Token = os.Getenv("TOKEN")
 	c.Docker.Source = os.Getenv("DOCKER_SOURCE")
 
